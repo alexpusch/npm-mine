@@ -21,10 +21,14 @@ class ModuleReader
         @_requestNextPage (err, modules) => 
           return done(err) if err
 
+          if(modules.length == 0)
+            return done null, null
+
           @nextStartKey = modules[modules.length - 1].id
           @buffer = modules
           nextModule = @_popFromBuffer()
           done null, nextModule 
+
 
   _popFromBuffer: ->
     nextModule = @buffer[0]
@@ -61,10 +65,9 @@ class ModuleReader
 
       done null, body.rows[0].id
 
-module.exports = getModuleStream = ->
+getModuleStream = (options) ->
   stream = new Readable {objectMode: true}
-  moduleReader = new ModuleReader
-    rowsPerPage: 50
+  moduleReader = new ModuleReader options
 
   stream._read = ->
     moduleReader.next (err, module) ->
@@ -74,3 +77,16 @@ module.exports = getModuleStream = ->
       stream.push module
 
   return stream
+
+getModuleCount = (done) ->
+  request.get NPM_COUCHDB_URI, { json: true }, (err, response, body) ->
+    if err
+      done err
+      return
+
+    done null, body.doc_count
+
+module.exports = {
+  getModuleStream,
+  getModuleCount
+}
