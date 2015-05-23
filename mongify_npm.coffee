@@ -1,7 +1,8 @@
 MongoClient = require('mongodb').MongoClient
 ProgressBar = require "progress"
+through2 = require 'through2'
 
-{ getModuleStream, getModuleCount } = require "./moudle_stream"
+{ getModuleStream, getModuleCount } = require "./npm_db_utils"
 
 MONGODB_URI = "mongodb://localhost:27017/npm3"
 
@@ -19,25 +20,31 @@ encodeDoc = (doc) ->
 
   doc
 
+
 MongoClient.connect MONGODB_URI, (err, db) ->
   console.log err if err
+
+  updateDb = through2.obj (module, enc, callback)->
+    module = encodeDoc module
+    # db.collection("modules").update {id: module.id}, module, {upsert: true}, (err, o) =>
+    db.collection("modules").insert module, (err, o) =>
+      console.log(err) if err?
+      this.push module
+      callback()
+
 
   getModuleCount (err, count) ->
     console.log err if err
     bar = new ProgressBar('[:bar] :current/:total (:percent) :elapsed :eta', { total: count });
-
-    modules = db.collection("modules")
+    
     stream = getModuleStream
       rowsPerPage: 500
 
-    stream.on "readable", () ->
-      bar.tick(1);
-      module = stream.read()
+    stream.pipe(updateDb).on "data", ->
+      bar.tick(1)
 
-      unless module == null
-        module = encodeDoc module
-        modules.update {id: module.id}, module, {upsert: true}, (err) ->
-          console.log err if err
+    # stream.on "data", (data) ->
+    #   console.log data.id
 
     stream.on "end", ->
       console.log "done!!"
