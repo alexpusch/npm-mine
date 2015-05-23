@@ -6,10 +6,10 @@ NPM_COUCHDB_URI = "https://skimdb.npmjs.com/registry"
 
 class ModuleReader
   constructor: (options) ->
-    {@rowsPerPage} = options
+    {@rowsPerPage, @nextStartKey} = options
     @buffer = []
 
-  next: (done) ->
+  next: (done) ->  
     @_ensureInit (err) =>
       return done(err) if err
 
@@ -20,7 +20,6 @@ class ModuleReader
       else
         @_requestNextPage (err, modules) => 
           return done(err) if err
-
           if(modules.length == 0)
             return done null, null
 
