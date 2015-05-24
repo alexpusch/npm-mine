@@ -5,9 +5,11 @@ ProgressBar = require "progress"
 
 getNpmDownloadCount = require "./npm_downloads_counter"
 
-MONGODB_URI = "mongodb://localhost:27017/npm3"
+MONGODB_URI = "mongodb://localhost:27017/npm"
 
-query = {}
+query = {"downloadsInfo": {"$exists": 0}}
+queryStep = 100
+cuncurency = 8
 
 getDownloadsCountTask = (task, done) ->
   skip = task.skip
@@ -20,15 +22,20 @@ getDownloadsCountTask = (task, done) ->
 
     moduleNames = _(modules).pluck("key").value()
     getNpmDownloadCount moduleNames, (err, downloadData) ->
-      return done(err) if err?
+      if err?
+        bar.tick moduleNames.length
+        return done(err) 
 
       keys = _.keys(downloadData)
 
-      if (keys.length == 1)
+      if (downloadData.error?)
         bar.tick moduleNames.length
-        return queueDone()
+        return done()
 
-      async.each keys, (key, eachDone) ->
+      if(keys.length < moduleNames.length)
+        bar.tick(moduleNames.length - keys.length)
+
+      async.eachLimit keys, cuncurency, (key, eachDone) ->
         bar.tick(1)
         modulesCollection.update({key: key}, {$set: {downloadsInfo: downloadData[key]}}, eachDone)
       , done
@@ -49,12 +56,14 @@ async.auto
     moduleCount = results.count
 
     bar = new ProgressBar('[:bar] :current/:total (:percent) :elapsed :eta', { total: moduleCount });
-    q = async.queue getDownloadsCountTask, 8
+    q = async.queue getDownloadsCountTask, cuncurency
 
-    queryStep = 100
-    n = Math.floor moduleCount/queryStep
+    q.drain = ->
+      done()
+    
+    n = Math.floor(moduleCount/queryStep)
 
-    for i in [0..n]
+    for i in [0...(n)]
       q.push
         skip: queryStep * i
         limit: queryStep
@@ -66,3 +75,5 @@ async.auto
 
   , (err, results) ->
     console.log(err) if err?
+    console.log "DONE!"
+    results.db.close()
