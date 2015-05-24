@@ -4,7 +4,10 @@ getDownloadCount = (modules, done) ->
   queryString = _buildQueryString modules
   url = "https://api.npmjs.org/downloads/point/last-month/#{queryString}"
   request.get url, {json: true}, (err, response, body) ->
-    done null, body
+    if response.statusCode == 200
+      done null, body
+    else
+      done body
 
 _buildQueryString = (modules) ->
   s = ""
