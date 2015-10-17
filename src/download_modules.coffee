@@ -6,6 +6,14 @@ cloneModule = require("fishman").cloneModule
 NpmDb = require "./npm_db"
 MONGODB_URI = "mongodb://localhost:27017/npm-mine"
 
+countModules = (options, callback) ->
+  { threshold, mongoDBUri, path } = options
+
+  NpmDb.connect MONGODB_URI, (err, db) ->
+    db.count threshold, (err, result) ->
+      db.close()
+      callback(err, result)
+
 downloadModules = (options, callback) ->
   { threshold, mongoDBUri, path } = options
 
@@ -52,4 +60,4 @@ downloadModules = (options, callback) ->
     results.db.close()
     callback(err)
 
-module.exports = { downloadModules }
+module.exports = { downloadModules, countModules }

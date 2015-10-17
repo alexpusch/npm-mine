@@ -17,7 +17,6 @@ class NpmDb
 
   count: (threshold, callback) ->
     query = @_getThresholdQuery threshold
-    console.log query
     @_db.collection("modules").count query, callback
 
   close: () ->

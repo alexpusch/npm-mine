@@ -10,6 +10,13 @@ var action = process.argv[2];
 var legal = true;
 
 switch(action){
+  case "count":
+    args = _.defaults(args, {
+      threshold: 500,
+    })
+
+    break;
+    
   case "download":
     args = _.defaults(args, {
       threshold: 500,
@@ -19,6 +26,8 @@ switch(action){
       console.log("Missing argument: path");     
       legal = false
     }
+
+    break;
 }
 
 if(legal)
