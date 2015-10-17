@@ -10,9 +10,19 @@
     "mongodb": "^1.4.0",
     "progress": "^1.0.0",
     "request": "^2.0.0",
-    "through2": "^0.6.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "coffee-script": "^1.0.0",
+    "heapdump": "latest"
+  },
   "author": "Alex Puschisnky",
-  "license": "ISC"
+  "license": "ISC",
+  "bin": {
+    "npm-mine": "bin/npm-mine.js"
+  },
+  "scripts": {
+    "watch": "node_modules/coffee-script/bin/coffee -c -o lib --watch src ",
+    "compile": "node_modules/coffee-script/bin/coffee -c -o lib src",
+    "prepublish": "npm run-script compile"
+  }
 }
