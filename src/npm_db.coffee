@@ -11,8 +11,20 @@ class NpmDb
   updateDownloadCount: (downloadData, callback) ->
     @_db.collection("modules").update {_id: downloadData.package}, {$set: {downloadCount: downloadData.downloads}}, callback
 
+  find: (threshold, callback) ->
+    query = @_getThresholdQuery threshold
+    @_db.collection("modules").find query, callback
+
+  count: (threshold, callback) ->
+    query = @_getThresholdQuery threshold
+    console.log query
+    @_db.collection("modules").count query, callback
+
   close: () ->
     @_db.close()
+
+  _getThresholdQuery: (threshold) ->
+    {"downloadCount": {"$gt" : threshold}}
 
   _encodeDoc: (doc) ->
     id = doc.id
@@ -32,6 +44,19 @@ class NpmDb
 
       if typeof val == "object"
         @_escapeMongo val
+
+    doc
+
+  _decodeDoc = (doc) ->
+    for key, val of doc
+      if key.indexOf("%") >= 0 || key.indexOf("^") >= 0
+        delete doc[key]
+        key = key.replace /\%/g, "."
+        key = key.replace /\^/g, "$"
+        doc[key] = val
+
+      if typeof val == "object"
+        @_decodeDoc val
 
     doc
 
