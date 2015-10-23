@@ -19,6 +19,9 @@ class NpmDb
     query = @_getThresholdQuery threshold
     @_db.collection("modules").count query, callback
 
+  ensureIndexes: (callback) ->
+    @_db.collection("modules").ensureIndex {downloadCount: 1}, callback
+
   close: () ->
     @_db.close()
 
@@ -61,7 +64,9 @@ class NpmDb
 
 connect = (mongoDBUri, callback) ->
   MongoClient.connect mongoDBUri, (err, db) ->
-      callback(err, new NpmDb(db))
+    npmDb = new NpmDb(db)
+    npmDb.ensureIndexes ->
+      callback(err, npmDb);
 
 module.exports = {
   connect
