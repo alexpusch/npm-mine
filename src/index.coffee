@@ -2,9 +2,9 @@ _ = require "lodash"
 
 { mongifyNpm } = require "./mongify_npm"
 { downloadModules, countModules } = require "./download_modules"
+config = requrie "../config"
 
-baseOptions = 
-  mongoDBUri: "mongodb://localhost:27017/npm-mine"
+baseOptions = config
 
 metadata = ->
   mongifyNpm baseOptions, (err) ->

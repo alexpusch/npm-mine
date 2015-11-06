@@ -8,6 +8,16 @@
  - [Sinopia](https://github.com/rlidwka/sinopia) - host npm repository, storing downloaded npms
  - [Fishman](https://github.com/idosh/Fishman) - download a list of wanted npms
 
+config
+-------------
+All data is stored in a mongoDB database. Config your db in config.json:
+
+```json
+{
+  "mongoDBUri": "mongodb://localhost:27017/npm-mine"
+}
+```
+
 
 usage
 ------
