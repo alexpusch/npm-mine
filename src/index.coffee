@@ -2,7 +2,7 @@ _ = require "lodash"
 
 { mongifyNpm } = require "./mongify_npm"
 { downloadModules, countModules } = require "./download_modules"
-config = requrie "../config"
+config = require "../config"
 
 baseOptions = config
 
